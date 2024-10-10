@@ -43,11 +43,32 @@ const OtpLogin = () => {
 
     const verifyOTP= async(e)=>{
         e.preventDefault();
-        try {
+        try { 
             const data= await confirmationResult.confirm(otp);
-            console.log(data);
-            setSuccess("OTP verfied Successfully");
-            navigate('/profile')
+            const idToken=auth.currentUser.getIdToken(true)
+            idToken.then((token)=>{
+                fetch('http://localhost:8080/verify', {
+                    method: 'GET',
+                    headers: {
+                      'Authorization': `Bearer ${token}`,
+                    },
+                  })
+                  .then(response => {
+                    if (!response.ok) {
+                      throw new Error('Network response was not ok');
+                    }
+                    console.log('Request succeeded with status:', response.status);
+                  })
+                  .then(() => {
+                    console.log('Token verified successfully:');
+                    setSuccess("OTP verfied Successfully");
+                    navigate('/profile')
+                  })
+                  .catch((error) => {
+                    console.error('Error during token verification:', error);
+                  });
+            })
+              
         } catch (error) {
             console.log("Please check the OTP and try again",error)
         }
